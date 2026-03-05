@@ -75,7 +75,13 @@ export function GameProvider({ children }) {
           if (userDoc.exists()) loadStats(userDoc.data());
           else {
             // New user in Firebase
-            const initData = { name: fbUser.displayName, avatar: fbUser.photoURL, easy: {}, medium: {}, hard: {} };
+            const initData = { 
+              name: fbUser.displayName, 
+              avatar: fbUser.photoURL, 
+              easy:   { score: 0, wins: 0, losses: 0, draws: 0, streak: 0 },
+              medium: { score: 0, wins: 0, losses: 0, draws: 0, streak: 0 },
+              hard:   { score: 0, wins: 0, losses: 0, draws: 0, streak: 0 }
+            };
             await setDoc(doc(db, 'users', fbUser.uid), initData);
           }
         } else setUser(null);
@@ -141,7 +147,16 @@ export function GameProvider({ children }) {
       const userRef = doc(db, 'users', user.id);
       const userDoc = await getDoc(userRef);
       const data = userDoc.data() || {};
-      const stats = data[d] || { score: 0, wins: 0, losses: 0, draws: 0, streak: 0 };
+      
+      // Ensure stats object is fully populated with defaults
+      const currentStats = data[d] || {};
+      const stats = {
+        score:  Number(currentStats.score  || 0),
+        wins:   Number(currentStats.wins   || 0),
+        losses: Number(currentStats.losses || 0),
+        draws:  Number(currentStats.draws  || 0),
+        streak: Number(currentStats.streak || 0)
+      };
       
       if (outcome === 'win') {
         stats.score += 1;
